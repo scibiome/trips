@@ -24,6 +24,17 @@ def get_lcc(G):
 
     return G0
 
+
+def jaccard_similarity(list1, list2):
+    
+    if len(list1) == 0:
+        return 0.0
+    else:
+        intersection = len(list(set(list1).intersection(list2)))
+        union = (len(set(list1)) + len(set(list2))) - intersection
+        return float(intersection) / union
+
+
 def get_unique_nodes(df):
 
     """
@@ -37,17 +48,6 @@ def get_unique_nodes(df):
     all_nodes = list(set(all_nodes))
 
     return all_nodes
-
-
-def jaccard_similarity(list1, list2):
-    
-    if len(list1) == 0 or len(list2) == 0:
-        return 0.0
-    else:
-        intersection = len(list(set(list1).intersection(list2)))
-        print("intersection", intersection)
-        union = (len(set(list1)) + len(set(list2))) - intersection
-        return float(intersection) / union
 
 
 def calculate_precision(list1, gold_standard):
@@ -70,7 +70,7 @@ def extract_cacts_results(file, n_top_reg=None):
     else:
         return []
         
-def extract_aracne_results(file, all_tfs=[], n_top_edges=10000):
+def extract_aracne_results(file, all_tfs=[], n_top_edges=5000):
     
     df = pd.read_csv(file, sep="\t")
     df = df.head(n_top_edges)
@@ -145,8 +145,6 @@ def extract_diamond_pcst_results(folder_diam_pcst, dataset, directed=False, shuf
             else:
                 G = nx.from_pandas_edgelist(df, "source", "target", create_using=nx.Graph)
             soln = list(G.nodes())
-        else:
-            print("No. DIAMOnD+PCST files found.")
 
     else:
         file_soln = os.path.join(folder_diam_pcst, dataset, "{}_pcst.txt".format(dataset))
@@ -157,8 +155,6 @@ def extract_diamond_pcst_results(folder_diam_pcst, dataset, directed=False, shuf
             else:
                 G = nx.from_pandas_edgelist(df, "source", "target", create_using=nx.Graph)
             soln = list(G.nodes())
-        else:
-            print("No. DIAMOnD+PCST files found.")
 
     return soln
 
@@ -195,8 +191,6 @@ def load_combined_solutions_shuffled(target_folder, dataset, directed=False, ver
                         df = pd.read_csv(file_undirected, sep="\t")
                         G_directed = nx.from_pandas_edgelist(df, "source", "target", create_using=nx.DiGraph)
                         G_big = nx.compose(G_big, G_directed)
-        else:
-            print("No. TRIPS output files found for workflow.")
     else:
         G_big = nx.Graph()
         if indices:
@@ -214,8 +208,6 @@ def load_combined_solutions_shuffled(target_folder, dataset, directed=False, ver
                         df = pd.read_csv(file_undirected, sep="\t")
                         G_undirected = nx.from_pandas_edgelist(df, "source", "target", create_using=nx.Graph)
                         G_big = nx.compose(G_big, G_undirected)
-        else:
-            print("No. TRIPS output files found for workflow.")
 
     return G_big
 
@@ -236,7 +228,7 @@ def extract_degs_pcst_results(folder_degs_pcst, dataset, shuffling_method=None):
     return soln
 
 
-def network_perturbation(folder, target_workflow, all_datasets, directed=False, title="", all_tfs=[], dict_dataset_map=None,
+def network_perturbation(folder, target_workflow, all_datasets, title="", all_tfs=[], dict_dataset_map=None,
                         folder_degs=None, filename=None,
                         N=20, gold_standard=None, n_mech=None,
                         mode=None, pval_thresh=0.05, lfc_thresh = 1, verbose=False):
@@ -246,13 +238,7 @@ def network_perturbation(folder, target_workflow, all_datasets, directed=False, 
     gold_standard: dictionary of disease DOIDs:[list of disease-associated genes]
     """
 
-    if directed:
-        all_shuffling_methods = ["REWIRED", "EDGE_SWITCHING", "EXPECTED_DEGREE", "UNIFORM"]
-        print("Using directed networks.")
-    else:
-        all_shuffling_methods = ["REWIRED", "EXPECTED_DEGREE", "SCALE_FREE", "SHUFFLED"]
-        print("Using undirected networks.")
-
+    all_shuffling_methods = ["REWIRED", "EXPECTED_DEGREE", "SCALE_FREE", "SHUFFLED"]
     workflows = [target_workflow] + all_shuffling_methods
 
     dict_precisions = {k: [] for k in workflows}
@@ -351,5 +337,5 @@ def network_perturbation(folder, target_workflow, all_datasets, directed=False, 
             dict_soln_size[workflow].append(len(all_covers))
 
         disease_tfs = [] # reset list
-  
+
     return dict_precisions, dict_recall, dict_soln_size

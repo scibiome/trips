@@ -34,20 +34,6 @@ def get_degs(file_degs, lfc_thresh=1.0, pval_thresh=0.05):
     return degs
 
 
-def get_grn(file_grn, directed=False, n_top_edges=None):
-
-    df_grn = pd.read_csv(file_grn, sep="\t")
-
-    if n_top_edges:
-        df_grn = df_grn.head(n_top_edges)
-    if directed:
-        G_grn = nx.from_pandas_edgelist(df_grn, source="node1", target="node2", create_using=nx.DiGraph)
-    else:
-        G_grn = nx.from_pandas_edgelist(df_grn, source="node1", target="node2")
-
-    return G_grn
-
-
 def get_ppi_net(file_ppi_net):
 
     """
@@ -68,7 +54,6 @@ def convert_to_networkx_graph(df):
     """
 
     df["weight"] = 1
-
     G = nx.from_pandas_edgelist(df, "tf1", "tf2", edge_attr=["weight"])
     GG = G.subgraph(max(nx.connected_components(G), key=len))
 
@@ -103,27 +88,6 @@ def get_unique_nodes(df):
     all_nodes = list(set(all_nodes))
 
     return all_nodes
-
-
-def get_grn(file_grn, directed=True, n_top_edges=None, weighted=False):
-
-    df_grn = pd.read_csv(file_grn, sep="\t")
-    print(df_grn.head())
-    if df_grn.shape[1] > 2:
-        df_grn = df_grn.sort_values(by=["weight"], ascending=False)
-    if n_top_edges:
-        df_grn = df_grn.head(n_top_edges)
-
-    if (directed and weighted):
-        G_grn = nx.from_pandas_edgelist(df_grn, source="from", target="to", edge_attr='weight', create_using=nx.DiGraph)
-    elif (directed and not weighted):
-        G_grn = nx.from_pandas_edgelist(df_grn, source="from", target="to", create_using=nx.DiGraph)
-    elif (not directed and weighted):
-        G_grn = nx.from_pandas_edgelist(df_grn, source="from", target="to", edge_attr='weight')
-    elif (not directed and not weighted):
-        G_grn = nx.from_pandas_edgelist(df_grn, source="from", target="to")
-
-    return G_grn
 
 
 def load_ppi_biogrid_custom(file_biogrid_raw, filter_type="scored"):
@@ -171,8 +135,6 @@ def load_combined_solutions(target_folder, dataset, directed=False, verbose=Fals
                         df = pd.read_csv(file_undirected, sep="\t")
                         G_directed = nx.from_pandas_edgelist(df, "source", "target", create_using=nx.DiGraph)
                         G_big = nx.compose(G_big, G_directed)
-        else:
-            print("No output files found.")
 
     else:
         G_big = nx.Graph()
@@ -191,9 +153,6 @@ def load_combined_solutions(target_folder, dataset, directed=False, verbose=Fals
                         df = pd.read_csv(file_undirected, sep="\t")
                         G_undirected = nx.from_pandas_edgelist(df, "source", "target", create_using=nx.Graph)
                         G_big = nx.compose(G_big, G_undirected)
-
-        else:
-            print("No output files found.")
 
     return G_big
 

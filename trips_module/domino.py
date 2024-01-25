@@ -101,8 +101,8 @@ class DominoRunner:
 
         path_to_seeds = f'{self.output_folder}/{keyword}_domino_seeds.txt'
         path_to_seeds = path_to_seeds.replace(" ", "_")
-        print("path_to_seeds", path_to_seeds)
-        print("self.output_folder", self.output_folder)
+        # print("path_to_seeds", path_to_seeds)
+        # print("self.output_folder", self.output_folder)
 
         # 3. Insert the command to run your method, direct the output to path_to_output
         # path_to_output = f'../../temp/'
