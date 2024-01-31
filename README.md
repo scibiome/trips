@@ -38,3 +38,7 @@ The positional arguments are:
 [7] The logFoldChange threshold.
 [8] Percentile value to determine the edge cost.
 ```
+
+# References
+[1] Levi, H., Elkon, R., & Shamir, R. (2021). DOMINO: a network‐based active module identification algorithm with reduced rate of false calls. Molecular systems biology, 17(1), e9593. <br>
+[2] Leitner, M., Ljubić, I., Luipersbeck, M., & Sinnl, M. (2018). A dual ascent-based branch-and-bound framework for the prize-collecting Steiner tree and related problems. INFORMS journal on computing, 30(2), 402-420.
