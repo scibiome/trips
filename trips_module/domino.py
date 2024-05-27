@@ -20,9 +20,9 @@ class DominoRunner:
         self.output_folder = output_folder
         
         if mapping:
-            self.prepare_gene_mapping(ppi_network)
-        else:
             self.mapping = mapping
+        else:
+            self.prepare_gene_mapping(ppi_network)
 
         path_to_network = self.prepare_ppi_net_for_domino(ppi_network)
         self.path_to_network = path_to_network

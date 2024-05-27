@@ -5,7 +5,7 @@ from trips_module.domino import DominoRunner
 from trips_module.dapcstp import DAPCSTP
 from trips_module.assign_scores import *
 from trips_module.utils import *
-from trips_module.network_generators import  *
+# from trips_module.network_generators import  *
 
 
 def validate_path(f):
@@ -76,13 +76,15 @@ def run_trips_one(ppi_network, G_grn, file_degs, path_to_domino, path_to_dapcst,
               mapping=None,
               min_comm_size=0,
               directed_grn=False,
-              score_others="mean",
+              score_others="min",
               mode="module",
               domino_done=False,
-              domino_modules=None):
+              domino_modules=None,
+              custom_hub_penalty=None, hybrid_score=None,
+                         penalize_degs=False):
 
     print("Parameters:")
-    print("directed GRN: ", directed_grn)
+    # print("directed GRN: ", directed_grn)
     print("lfc threshold: ", lfc_thresh)
     print("pval threshold: ", pval_thresh)
     print("edge cost percentile: ", pp)
@@ -106,7 +108,7 @@ def run_trips_one(ppi_network, G_grn, file_degs, path_to_domino, path_to_dapcst,
 
     # =============Get the gene modules=============
     # degs = get_degs(file_degs, lfc_thresh=lfc_thresh, pval_thresh=pval_thresh)
-    df_degs = pd.read_csv(file_degs, sep="\t")
+    df_degs = pd.read_csv(file_degs, sep=",")
     df_degs = df_degs[df_degs["AdjPValue"] < pval_thresh]
     df_degs = df_degs[abs(df_degs["Log_FoldChange"]) > lfc_thresh]
     df_degs["score"] = -1 * (np.log10(df_degs["AdjPValue"]))
@@ -141,8 +143,11 @@ def run_trips_one(ppi_network, G_grn, file_degs, path_to_domino, path_to_dapcst,
     if mode == "module":
         for index, domino_module in enumerate(all_modules):
 
-            dict_scores = calculate_gene_scores_retaindegs(file_degs, G_grn, lfc_thresh, pval_thresh, score_others=score_others,
-                                                       prize_multiplier=prize_multiplier, gene_module=domino_module)
+            # dict_scores = calculate_gene_scores_retaindegs(file_degs, G_grn, lfc_thresh, pval_thresh, score_others=score_others,
+            #                                            prize_multiplier=prize_multiplier, gene_module=domino_module)
+            dict_scores = calculate_gene_scores(file_degs, G_grn, lfc_thresh, pval_thresh, score_others=score_others,
+                                                prize_multiplier=prize_multiplier, gene_module=domino_module, 
+                                                custom_hub_penalty=custom_hub_penalty, hybrid_score=hybrid_score, penalize_degs=penalize_degs)
 
             print("No. of genes in the domino module: ", len(domino_module))
             mod = "{}_module_{}".format(keyword, index)
@@ -178,6 +183,18 @@ def run_trips_one(ppi_network, G_grn, file_degs, path_to_domino, path_to_dapcst,
     # Load DAPCSTP solutions
     G_all = load_combined_solutions(final_output_folder, keyword, directed=False, verbose=False)
 
+    # Save the DOMINO results
+    file_output = os.path.join(final_output_folder, f"{keyword}_DOMINO_modules_one_per_line.txt")
+    with open(file_output, "w") as f:
+        for mod in all_modules:
+            line = "\t".join(mod)
+            f.write(line + "\n")
+
+    # Save the final TRIPS output
+    file_out = os.path.join(final_output_folder, f"{keyword}_trips_solution.txt")
+    df_soln = nx.to_pandas_edgelist(G_all)
+    df_soln.to_csv(file_out, sep="\t", index=False)
+    
     return all_modules, G_all
 
 if __name__ == "__main__":
