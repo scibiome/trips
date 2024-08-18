@@ -2,10 +2,11 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
+
 def plot_grn_trips(G_all, all_tfs=[], domino_genes=[], figsize=(15, 15),
                    layout = "graphviz_layout", prog="sfdp",
                    tf_color="lightsteelblue", domino_color="sandybrown", both_color="lightgreen",
-                   normal_color="lightgray", highlight_mode="tf_and_module",
+                   normal_color="lightgray", highlight_mode="tf_and_module", fontsize_legend=12,
                    nodesize=2200, fontsize=14, legend_loc="upper left", filename=None, dpi=300):
 
     """
@@ -17,6 +18,10 @@ def plot_grn_trips(G_all, all_tfs=[], domino_genes=[], figsize=(15, 15),
     plt.style.use('default')
 
     G = G_all.copy()
+    
+    # Remove dashes in the node names, replace with underscores
+    mapping = {k:k.replace("-","_") for k in G.nodes()}
+    G = nx.relabel_nodes(G, mapping)
 
     if highlight_mode == "tf_and_module":
         common_genes = list(set(all_tfs).intersection(set(domino_genes)))
@@ -53,7 +58,7 @@ def plot_grn_trips(G_all, all_tfs=[], domino_genes=[], figsize=(15, 15),
     custom_lines = [Line2D([0], [0], color=tf_color, lw=8),
                     Line2D([0], [0], color=domino_color, lw=8),
                     Line2D([0], [0], color=both_color, lw=8)]
-    ax.legend(custom_lines, ['TF', 'DOMINO module', 'Both TF and in DOMINO module'], fontsize=20, loc=legend_loc)
+    ax.legend(custom_lines, ['TF', 'DOMINO module', 'Both TF and in DOMINO module'], fontsize=fontsize_legend, loc=legend_loc)
     ax= plt.gca()
     ax.axis('off')
 
